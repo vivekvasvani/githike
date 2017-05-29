@@ -37,7 +37,7 @@ func SendGitHikeOptions(ctx *fasthttp.RequestCtx) {
 	ctx.Response.Header.Set("Content-Type", "application/json")
 	ctx.Response.SetBodyString("OK")
 	ctx.SetStatusCode(http.StatusOK)
-	
+
 	//headers for response
 	header["Content-Type"] = application_json
 	header["Accept"] = application_json
@@ -97,7 +97,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			allTeamsArray, _ := git.ListTeams()
 			for i, val := range allTeamsArray {
 				//valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\n"
-				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ".  + val.GetName() + "\", \"short\": true },"
+				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
 			}
 			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
 			session[1] = roleDefinition
