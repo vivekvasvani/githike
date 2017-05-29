@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	GITHUB_TOKEN = "09c8d92072980c093229455b6f15df9fd9b3ab8f"
+	GITHUB_TOKEN = "ca9198df02675a847cfd3208fbf96fb880ac64c9"
 	ORG          = "hike"
 )
 
