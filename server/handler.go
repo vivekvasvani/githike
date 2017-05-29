@@ -34,10 +34,6 @@ var (
 )
 
 func SendGitHikeOptions(ctx *fasthttp.RequestCtx) {
-	ctx.Response.Header.Set("Content-Type", "application/json")
-	ctx.Response.SetBodyString("OK")
-	ctx.SetStatusCode(http.StatusOK)
-
 	//headers for response
 	header["Content-Type"] = application_json
 	header["Accept"] = application_json
@@ -47,10 +43,6 @@ func SendGitHikeOptions(ctx *fasthttp.RequestCtx) {
 }
 
 func HandleAppRequests(ctx *fasthttp.RequestCtx) {
-	ctx.Response.Header.Set("Content-Type", "application/json")
-	ctx.Response.SetBodyString("OK")
-	ctx.SetStatusCode(http.StatusOK)
-
 	slackapis.InviteUserToChannel()
 	var appRequest SlackAppRequest
 	err := json.Unmarshal(ctx.Request.PostArgs().Peek("payload"), &appRequest)
