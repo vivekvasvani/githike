@@ -1,0 +1,29 @@
+{
+	"text": "${3}",
+    "replace_original": false,              
+     "attachments": [
+        {
+            "text": "${0}",
+            "fallback": "",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "callback_id": "send_request_to_admin",            
+            "actions": [                
+                {
+                    "name": "Approve",
+                    "text": "Approve",
+                    "type": "button",
+                    "style": "primary",
+                    "value": "${1}"
+                },
+                {
+                    "name": "Decline",
+                    "text": "Decline",
+                    "type": "button",
+                    "style": "danger",
+                    "value": "${2}"
+                }
+            ]                     
+        }
+    ]
+}

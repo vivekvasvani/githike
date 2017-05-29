@@ -1,0 +1,37 @@
+{    
+    "text": "",
+    "response_type": "in_channel",
+    "replace_original": true,
+    "channel" : "${5}",
+    "attachments": [
+        {
+            "fallback": "",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "callback_id": "release",
+			"title": "${4}",
+            "fields": [
+                {
+                    "title": "User ID",
+                    "value": "${0}",
+                    "short": true
+                },
+				{
+                    "title": "Team",
+                    "value": "${1}",
+                    "short": true
+                },
+				{
+                    "title": "Role Type",
+                    "value": "${2}",
+                    "short": true
+                },
+				{
+                    "title": "Approved By",
+                    "value": "${3}",
+                    "short": true
+                }
+            ]        
+        }
+    ]
+}

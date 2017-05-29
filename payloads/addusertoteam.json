@@ -1,0 +1,5 @@
+{
+	"text": "``` Use This slash command to add team membership.\n /addmembership [teamname]>[userid]>[roletype]\n\nList of all Hike teams:\n ${0} \n${1} ```",
+    "response_type": "in_channel",
+    "replace_original": true
+}

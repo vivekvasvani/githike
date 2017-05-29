@@ -1,0 +1,52 @@
+{
+	"text": "",
+    "response_type": "in_channel",
+    "replace_original": true,
+     "attachments": [
+        {
+            "text": "I support following commands\n",
+            "fallback": "",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "callback_id": "send_all_options",
+            "actions": [
+                {
+                    "name": "option_list",
+                    "text": "Select any option",
+                    "type": "select",
+                    "options": [
+                        /*
+                        {
+                            "text": "Delete Deploy Key from a repo",
+                            "value": "DeleteKey"
+                        },
+                        {
+                            "text": "Add Deploy Key for a repo",
+                            "value": "AddKey"
+                        },
+                        {
+                            "text": "Creates a new PRIVATE [default] repository",
+                            "value": "CreateRepo"
+                        },
+                        */
+                        {
+                            "text": "List the Pull Requests for a repo",
+                            "value": "ListPRs"
+                        },
+                        {
+                            "text": "Adds a GitHub user to a specific team",
+                            "value": "AddUserToTeam"
+                        }
+                    ]
+                },                
+                {
+                    "name": "Cancel",
+                    "text": "Cancel",
+                    "type": "button",
+                    "style": "danger",
+                    "value": "gitoptioncancel"
+                }
+            ]
+        }
+    ]
+}
