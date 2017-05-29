@@ -88,14 +88,10 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
 			allTeamsArray, _ := git.ListTeams()
 			for i, val := range allTeamsArray {
-				if i%2 == 0 {
-					valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\n"
-				} else {
-					valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\t\t\t\t\t"
-				}
-
+				//valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\n"
+				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": " + strconv.Itoa(i+1) + ". " + val.GetName() + ", \"short\": true },"
 			}
-			session[0] = valuesForTeamsDropDown
+			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
 			session[1] = roleDefinition
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 			payload := SubstParams(session, GetPayload("addusertoteam.json"))
