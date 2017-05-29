@@ -211,7 +211,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 func AddHikeTeamMembership(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	response_url := string(ctx.PostArgs().Peek("response_url"))
 	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
-	commandLineParams := strings.Split(textStr, ">")
+	commandLineParams := strings.Split(textStr, "#")
 	if len(commandLineParams) != 3 {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Commandline params are not valid :"+textStr+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		return
