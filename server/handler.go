@@ -21,9 +21,9 @@ import (
 
 const (
 	application_json               = "application/json"
-	SLACK_TOKEN                    = "xoxp-2151902985-167537642311-181450648469-1abc20fff346031bb10664d62f64e997"
-	SLACK_WEBHOOK                  = "https://hooks.slack.com/services/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"
-	SLACK_WEBHOOK_TO_SEND_SLACKBOT = "https://hooks.slack.com/services/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"
+	SLACK_TOKEN                    = ""
+	SLACK_WEBHOOK                  = ""
+	SLACK_WEBHOOK_TO_SEND_SLACKBOT = ""
 )
 
 var (
