@@ -89,7 +89,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			allTeamsArray, _ := git.ListTeams()
 			for i, val := range allTeamsArray {
 				//valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\n"
-				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \" + strconv.Itoa(i+1) + ".  + val.GetName() + "\", \"short\": true },"
+				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ".  + val.GetName() + "\", \"short\": true },"
 			}
 			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
 			session[1] = roleDefinition
