@@ -6,7 +6,7 @@
     "attachments": [
         {
             "fallback": "",
-            "color": "#3AA3E3",
+            "color": "#25B068",
             "attachment_type": "default",
             "callback_id": "release",
 			"title": "${4}",
