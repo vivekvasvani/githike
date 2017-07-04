@@ -2,6 +2,7 @@ package githubapis
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"fmt"
@@ -170,12 +171,10 @@ func AddTeamMembership(team int, user, role string) (*github.Membership, error) 
 	client := github.NewClient(tc)
 	membership, _, err := client.Organizations.AddTeamMembership(ctx, team, user, opts)
 	return membership, err
-
 }
 
 func SearchRepos() []string {
 	header := make(map[string]string)
-
 	var (
 		searchStruct SearchReposStruct
 		repos        []string
@@ -189,4 +188,53 @@ func SearchRepos() []string {
 		repos = append(repos, val.Name)
 	}
 	return repos
+}
+
+func DeactivateGithubHikeAccount(githubid string) bool {
+	var result = true
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	_, err := client.Organizations.RemoveMember(ctx, githubid, ORG)
+	if err != nil {
+		result = false
+	}
+	return result
+}
+
+func GetGithubIdFromEmail(email string) string {
+	header := make(map[string]string)
+	var (
+		searchStruct GetGithubId
+	)
+	header["Authorization"] = "token " + GITHUB_TOKEN
+	url := "https: //api.github.com/search/users?q=" + email + "+in:email+type:users"
+	response := client.HitRequest(url, "GET", header, "")
+	err := json.Unmarshal(response, &searchStruct)
+	fmt.Println(err)
+	return searchStruct.Items[0].Login
+}
+
+func CreateRepository(name, description, private string, teamid int) bool {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	privateBool, _ := strconv.ParseBool(private)
+	opts := &github.Repository{
+		Name:        &name,
+		Description: &description,
+		TeamID:      &teamid,
+		Private:     &privateBool,
+	}
+	client := github.NewClient(tc)
+	_, response, err := client.Repositories.Create(ctx, ORG, opts)
+	if response.StatusCode == 201 && err == nil {
+		return true
+	}
+	return false
 }

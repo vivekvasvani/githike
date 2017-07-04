@@ -96,7 +96,6 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
 			allTeamsArray, _ := git.ListTeams()
 			for i, val := range allTeamsArray {
-				//valuesForTeamsDropDown = valuesForTeamsDropDown + strconv.Itoa(i+1) + ".)" + val.GetName() + "\n"
 				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
 			}
 			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
@@ -104,6 +103,10 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 			payload := SubstParams(session, GetPayload("addusertoteam.json"))
 			client.HitRequest(response_url, "POST", header, payload)
+
+		case "DeleteUser":
+			//response_url := appRequest.ResponseURL
+
 		}
 
 		switch appRequest.CallbackID {
@@ -212,9 +215,78 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				values[3],
 			}, GetPayload("changeAfterDeclined.json"))
 			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "ACREATEREPO_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+
+			name := values[0]
+			description := values[1]
+			private := values[2]
+			teamName := values[3]
+			teamId := git.GetTeamNamesAndIdsMap()[teamName]
+
+			createrepoResult := git.CreateRepository(name, description, private, teamId)
+			if !createrepoResult {
+				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Could not complete the request at this moment.\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			} else {
+				client.HitRequest(response_url, "POST", header, SubstParams([]string{
+					name,
+					private,
+					teamName,
+					buttonRequestStruct.User.Name,
+					"",
+					values[4],
+				}, GetPayload("createRepoApproved.json")))
+			}
+
+			//Send status about the request back to user
+			payload := SubstParams([]string{
+				name,
+				private,
+				teamName,
+				buttonRequestStruct.User.Name,
+				"Excellent!!! Your Request has been approved!!!",
+				values[4],
+			}, GetPayload("createRepoApproved.json"))
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "DCREATEREPO_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+
+			name := values[0]
+			private := values[2]
+			teamName := values[3]
+
+			//Change in githike channel
+			client.HitRequest(response_url, "POST", header, SubstParams([]string{
+				name,
+				private,
+				teamName,
+				buttonRequestStruct.User.Name,
+				"",
+				values[4],
+			}, GetPayload("createRepoApproved.json")))
+
+			//Send status about the request back to user
+			payload := SubstParams([]string{
+				name,
+				private,
+				teamName,
+				buttonRequestStruct.User.Name,
+				"Sorry!!! Your Request has been declined :( Please get in touch with Team Admin",
+				values[4],
+			}, GetPayload("createRepoApproved.json"))
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
 		}
 	}
-
 }
 
 func AddHikeTeamMembership(ctx *fasthttp.RequestCtx, db *sql.DB) {
@@ -243,7 +315,6 @@ func AddHikeTeamMembership(ctx *fasthttp.RequestCtx, db *sql.DB) {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		return
 	}
-
 }
 
 func AddOrUpdateTeam(ctx *fasthttp.RequestCtx, db *sql.DB) {
@@ -276,6 +347,64 @@ func AddOrUpdateTeam(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	}
 }
 
+func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
+	response_url := string(ctx.PostArgs().Peek("response_url"))
+	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
+	//Check if member belogs to hike
+	if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+
+	//only admin can delete/deactivate github accounts
+	if callerId == "U02A1MA8Z" {
+		//if email
+		if strings.Contains(textStr, "@hike.in") {
+			githubId := git.GetGithubIdFromEmail(textStr)
+			fmt.Println("githubid from email --------->" + githubId)
+			if githubId == "" {
+				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as no github id is associated with this email id. Use github id instead.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+				return
+			}
+			git.DeactivateGithubHikeAccount(githubId)
+			//if github id
+		} else {
+			git.DeactivateGithubHikeAccount(textStr)
+		}
+		//if un-authorised
+	} else {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`You are not authorised to perform this task.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	}
+}
+
+func CreateRepository(ctx *fasthttp.RequestCtx, db *sql.DB) {
+	response_url := string(ctx.PostArgs().Peek("response_url"))
+	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	commandLineParams := strings.Split(textStr, "#")
+	if len(commandLineParams) != 4 {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Commandline params are not valid :"+textStr+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+	name := commandLineParams[0]
+	description := commandLineParams[1]
+	private := commandLineParams[2]
+	teamName := commandLineParams[3]
+	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
+	keysAndValues := git.GetTeamNamesAndIdsMap()
+	if _, ok := keysAndValues[commandLineParams[3]]; !ok {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`There in no such team in our config. Please check the Team's list again.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+	teamAdmin := GetTeamAdminFromDB(commandLineParams[0], db)
+	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	//name, description, private, teamname, teamid
+	NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamName, teamAdmin, keysAndValues[commandLineParams[3]])
+}
+
+//DeleteAndAdd ...
+//Delete and add team admins
 func DeleteAndAdd(teamadmin map[string]string, db *sql.DB) (bool, int) {
 	query := "DELETE FROM teamadmins"
 	_, err := db.Exec(query)
@@ -352,5 +481,26 @@ func NotifyAdminAndUser(response_url, callerId, githubUserId, teamAdmin, teamNam
 			client.HitRequest(SLACK_WEBHOOK, "POST", header, payload)
 		}
 	}
+}
 
+//name, description, private, teamname, teamid
+func NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamname, teamAdmin string, teamid int) {
+	//fmt.Println(response_url)
+	options := make([]string, 4)
+	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create " + name + " repository in  : " + teamname
+	options[1] = "ACREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
+	options[2] = "DCREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
+
+	api := slack.New(SLACK_TOKEN)
+	users, err := api.GetUsers()
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, val := range users {
+		if teamAdmin == val.Profile.Email {
+			options[3] = "Hey <@" + val.ID + ">,\n "
+			payload := SubstParams(options, GetPayload("sendToAdmin.json"))
+			client.HitRequest(SLACK_WEBHOOK, "POST", header, payload)
+		}
+	}
 }

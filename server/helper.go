@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/nlopes/slack"
 	"github.com/valyala/fasthttp"
 )
 
@@ -156,4 +158,18 @@ func SetSuccessResponse(ctx *fasthttp.RequestCtx, statusCode, statusType, status
 	ctx.Response.SetBodyString(ToJsonString(response))
 	glog.Infoln("Success Reponse " + ToJsonString(response))
 	ctx.SetStatusCode(httpStatus)
+}
+
+func GetEmailIdFromSlackId(id string) string {
+	api := slack.New(SLACK_TOKEN)
+	users, err := api.GetUsers()
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, val := range users {
+		if val.ID == id {
+			return val.Profile.Email
+		}
+	}
+	return "If you are seeing this. Please report to vivekv@hike.in"
 }

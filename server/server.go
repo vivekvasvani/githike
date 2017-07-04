@@ -30,6 +30,14 @@ func NewServer(db *sql.DB) {
 		AddOrUpdateTeam(ctx, db)
 	})
 
+	router.POST("/deletemember", func(ctx *fasthttp.RequestCtx) {
+		DeleteMember(ctx, db)
+	})
+
+	router.POST("/createrepo", func(ctx *fasthttp.RequestCtx) {
+		CreateRepository(ctx, db)
+	})
+
 	router.PanicHandler = func(ctx *fasthttp.RequestCtx, p interface{}) {
 		glog.V(0).Infof("Panic occurred %s", p, ctx.Request.URI().String())
 	}

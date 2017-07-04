@@ -1,0 +1,37 @@
+{    
+    "text": "",
+    "response_type": "in_channel",
+    "replace_original": true,
+    "channel" : "${5}",
+    "attachments": [
+        {
+            "fallback": "",
+            "color": "#25B068",
+            "attachment_type": "default",
+            "callback_id": "release",
+			"title": "${4}",
+            "fields": [
+                {
+                    "title": "Name",
+                    "value": "${0}",
+                    "short": true
+                },
+				{
+                    "title": "Private",
+                    "value": "${1}",
+                    "short": true
+                },
+				{
+                    "title": "Team Name",
+                    "value": "${2}",
+                    "short": true
+                },
+				{
+                    "title": "Approved By",
+                    "value": "${3}",
+                    "short": true
+                }
+            ]        
+        }
+    ]
+}
