@@ -350,16 +350,15 @@ func AddOrUpdateTeam(ctx *fasthttp.RequestCtx, db *sql.DB) {
 func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	response_url := string(ctx.PostArgs().Peek("response_url"))
 	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
-	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
-	//Check if member belogs to hike
-	if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
-		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-		return
-	}
 
 	//only admin can delete/deactivate github accounts
 	if callerId == "U02A1MA8Z" {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			return
+		}
 		//if email
 		if strings.Contains(textStr, "@hike.in") {
 			githubId := git.GetGithubIdFromEmail(textStr)
@@ -397,10 +396,13 @@ func CreateRepository(ctx *fasthttp.RequestCtx, db *sql.DB) {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`There in no such team in our config. Please check the Team's list again.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		return
 	}
-	teamAdmin := GetTeamAdminFromDB(commandLineParams[0], db)
+	teamAdmin := GetTeamAdminFromDB(teamName, db)
+	if teamAdmin == "" {
+		teamAdmin = "abhishekg@hike.in"
+	}
 	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 	//name, description, private, teamname, teamid
-	NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamName, teamAdmin, keysAndValues[commandLineParams[3]])
+	NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamName, teamAdmin, keysAndValues[teamName])
 }
 
 //DeleteAndAdd ...
