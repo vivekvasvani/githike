@@ -361,7 +361,7 @@ func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 			fmt.Println("githubid from email --------->" + githubId)
 
 			//If github id is empty
-			if githubId == "" {
+			if githubId == "" || githubId == "UNKNOWN" {
 				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as no github id is associated with this email id. Use github id instead.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 				return
 			}

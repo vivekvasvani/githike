@@ -211,11 +211,14 @@ func GetGithubIdFromEmail(email string) string {
 		searchStruct GetGithubId
 	)
 	header["Authorization"] = "token " + GITHUB_TOKEN
-	url := "https: //api.github.com/search/users?q=" + email + "+in:email+type:users"
+	url := "https://api.github.com/search/users?q=" + email + "+in:email+type:users"
 	response := client.HitRequest(url, "GET", header, "")
 	err := json.Unmarshal(response, &searchStruct)
 	fmt.Println(err)
-	return searchStruct.Items[0].Login
+	if searchStruct.TotalCount > 0 {
+		return searchStruct.Items[0].Login
+	}
+	return "UNKNOWN"
 }
 
 func CreateRepository(name, description, private string, teamid int) bool {
