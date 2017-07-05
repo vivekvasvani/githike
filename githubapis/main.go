@@ -198,7 +198,7 @@ func DeactivateGithubHikeAccount(githubid string) bool {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	_, err := client.Organizations.RemoveMember(ctx, githubid, ORG)
+	_, err := client.Organizations.RemoveMember(ctx, ORG, githubid)
 	if err != nil {
 		result = false
 	}

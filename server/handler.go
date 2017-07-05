@@ -353,7 +353,7 @@ func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
 
 	//only admin can delete/deactivate github accounts
-	if callerId == "U02A1MA8Z" {
+	if callerId == "U02A1MA8Z" || "U4XFTJW95" {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
@@ -367,10 +367,14 @@ func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as no github id is associated with this email id. Use github id instead.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 				return
 			}
-			git.DeactivateGithubHikeAccount(githubId)
+			if git.DeactivateGithubHikeAccount(githubId) {
+				client.HitRequest(SLACK_WEBHOOK, "POST", header, "{ \"text\": \"`User Deactivated :"+githubId+"`\"}")
+			}
 			//if github id
 		} else {
-			git.DeactivateGithubHikeAccount(textStr)
+			if git.DeactivateGithubHikeAccount(textStr) {
+				client.HitRequest(SLACK_WEBHOOK, "POST", header, "{ \"text\": \"`User Deactivated :"+textStr+"`\"}")
+			}
 		}
 		//if un-authorised
 	} else {
@@ -489,7 +493,7 @@ func NotifyAdminAndUser(response_url, callerId, githubUserId, teamAdmin, teamNam
 func NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamname, teamAdmin string, teamid int) {
 	//fmt.Println(response_url)
 	options := make([]string, 4)
-	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create " + name + " repository in  : " + teamname
+	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create *" + name + "* repository under  : *" + teamname + "*"
 	options[1] = "ACREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
 	options[2] = "DCREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
 
