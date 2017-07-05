@@ -355,23 +355,36 @@ func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	//only admin can delete/deactivate github accounts
 	if callerId == "U02A1MA8Z" || callerId == "U4XFTJW95" {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
-			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-			return
-		}
 		//if email
 		if strings.Contains(textStr, "@hike.in") {
-			githubId := git.GetGithubIdFromEmail(textStr)
+			githubId := git.GetGithubIdFromEmail(strings.TrimSpace(textStr))
 			fmt.Println("githubid from email --------->" + githubId)
+
+			//If github id is empty
 			if githubId == "" {
 				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as no github id is associated with this email id. Use github id instead.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 				return
 			}
+
+			//Check is user belongs to hike
+			if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(githubId)); !ok {
+				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+				return
+			}
+
+			//Finally deactivate the account
 			if git.DeactivateGithubHikeAccount(githubId) {
 				client.HitRequest(SLACK_WEBHOOK, "POST", header, "{ \"text\": \"`User Deactivated :"+githubId+"`\"}")
 			}
-			//if github id
+
 		} else {
+			//Check is user belongs to hike
+			if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
+				client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+				return
+			}
+
+			//Finally deactivate the account
 			if git.DeactivateGithubHikeAccount(textStr) {
 				client.HitRequest(SLACK_WEBHOOK, "POST", header, "{ \"text\": \"`User Deactivated :"+textStr+"`\"}")
 			}
