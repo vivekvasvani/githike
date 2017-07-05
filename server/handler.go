@@ -353,7 +353,7 @@ func DeleteMember(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
 
 	//only admin can delete/deactivate github accounts
-	if callerId == "U02A1MA8Z" || "U4XFTJW95" {
+	if callerId == "U02A1MA8Z" || callerId == "U4XFTJW95" {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
 			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
