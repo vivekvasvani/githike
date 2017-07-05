@@ -273,7 +273,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				buttonRequestStruct.User.Name,
 				"",
 				values[4],
-			}, GetPayload("createRepoApproved.json")))
+			}, GetPayload("createRepoDeclined.json")))
 
 			//Send status about the request back to user
 			payload := SubstParams([]string{
@@ -283,7 +283,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				buttonRequestStruct.User.Name,
 				"Sorry!!! Your Request has been declined :( Please get in touch with Team Admin",
 				values[4],
-			}, GetPayload("createRepoApproved.json"))
+			}, GetPayload("createRepoDeclined.json"))
 			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
 		}
 	}
