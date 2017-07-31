@@ -51,7 +51,7 @@ func NewServer(db *sql.DB) {
 	})
 
 	router.POST("/inviteusertohike", func(ctx *fasthttp.RequestCtx) {
-		//InviteUserToHike(ctx, db)
+		InviteUserToHike(ctx, db)
 	})
 
 	router.PanicHandler = func(ctx *fasthttp.RequestCtx, p interface{}) {

@@ -257,3 +257,19 @@ func GetUsersRepo(user string) []string {
 	}
 	return repos
 }
+
+func InviteUserToHike(username string) bool {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	opts := &github.Membership{}
+	_, _, err := client.Organizations.EditOrgMembership(ctx, username, ORG, opts)
+	if err == nil {
+		return true
+	} else {
+		return false
+	}
+}

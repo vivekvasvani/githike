@@ -63,9 +63,15 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 	switch appRequest.Actions[0].Type {
 	case "select":
 		switch appRequest.Actions[0].SelectedOptions[0].Value {
+
+		case "InviteUserToHike":
+			response_url := appRequest.ResponseURL
+			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/inviteusertohike <name>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			client.HitRequest(response_url, "POST", header, responseJson)
+
 		case "CreateNewRepository":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/inviteusertohike <name>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/createrepo <name>#<description>#<true for private || false for public>#<teamname>`\nEx. `/createrepo testrepo#This is a description#true#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListTeams":
@@ -125,7 +131,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "TeamDetails":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/teamdetails <reponame>`\nEx. `/teamdetails QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/teamdetails <teamname>`\nEx. `/teamdetails QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListPRs":
@@ -330,6 +336,38 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				values[4],
 			}, GetPayload("createRepoDeclined.json"))
 			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "ACSENDINVITATION_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+			githubHandle := values[0]
+			callerId := values[1]
+
+			sendInvitation := git.InviteUserToHike(githubHandle)
+			if !sendInvitation {
+				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Could not complete the request at this moment.\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			} else {
+				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			}
+
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}")
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "DCSENDINVITATION_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+
+			githubHandle := values[0]
+			callerId := values[1]
+
+			//Change in githike channel
+			client.HitRequest(response_url, "POST", header, "{\"text\" : \"Will not send invitation to :"+githubHandle+" , Declined by :"+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Will not send invitation to :"+githubHandle+" , Declined by :"+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}}")
 		}
 	}
 }
@@ -605,6 +643,37 @@ func NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, descripti
 	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create " + name + " repository under  : " + teamname
 	options[1] = "ACREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
 	options[2] = "DCREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
+
+	api := slack.New(SLACK_TOKEN)
+	users, err := api.GetUsers()
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, val := range users {
+		if teamAdmin == val.Profile.Email {
+			options[3] = "Hey <@" + val.ID + ">,\n "
+			payload := SubstParams(options, GetPayload("sendToAdmin.json"))
+			client.HitRequest(SLACK_WEBHOOK, "POST", header, payload)
+		}
+	}
+}
+
+func InviteUserToHike(ctx *fasthttp.RequestCtx, db *sql.DB) {
+	response_url := string(ctx.PostArgs().Peek("response_url"))
+	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
+	teamAdmin := "abhishekg@hike.in"
+
+	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	//name, description, private, teamname, teamid
+	NotifyAdminAndUserInviteUserToHike(response_url, textStr, callerId, teamAdmin)
+}
+
+func NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin string) {
+	options := make([]string, 3)
+	options[0] = "Do you want me to send invitation to :" + GetEmailIdFromSlackId(callerId) + "to join HIKE ?"
+	options[1] = "ACSENDINVITATION_" + ":" + githubhandle + ":" + callerId
+	options[2] = "DCSENDINVITATION_" + ":" + githubhandle + ":" + callerId
 
 	api := slack.New(SLACK_TOKEN)
 	users, err := api.GetUsers()
