@@ -1,0 +1,16 @@
+{
+	"text": "",
+    "response_type": "in_channel",
+    "replace_original": true,
+    "attachments": [
+        {
+            "color": "#36a64f",
+            "title": "",
+            "text": "Repository Details : ",
+            "fields": [
+                ${0}
+            ]
+            
+        }
+    ]
+}

@@ -24,19 +24,40 @@
                             "text": "Add Deploy Key for a repo",
                             "value": "AddKey"
                         },
-                        {
-                            "text": "Creates a new PRIVATE [default] repository",
-                            "value": "CreateRepo"
-                        },
                         */
                         {
-                            "text": "List the Pull Requests for a repo",
-                            "value": "ListPRs"
+                            "text": "Invite user to HIKE",
+                            "value": "inviteusertohike"
+                        },                        
+                        {
+                            "text": "List All Teams",
+                            "value": "ListTeams"
                         },
                         {
                             "text": "Adds a GitHub user to a specific team",
                             "value": "AddUserToTeam"
+                        },
+                        {
+                            "text": "Create a new repository",
+                            "value": "CreateNewRepository"
+                        },                        
+                        {
+                            "text": "User details",
+                            "value": "UserDetails"
+                        },
+                        {
+                            "text": "Repository details",
+                            "value": "RepoDetails"
+                        },
+                        {
+                            "text": "Team Details",
+                            "value": "TeamDetails"
+                        },
+                        {
+                            "text": "List the Pull Requests for a repo",
+                            "value": "ListPRs"
                         }
+                        
                     ]
                 },                
                 {

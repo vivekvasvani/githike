@@ -63,6 +63,71 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 	switch appRequest.Actions[0].Type {
 	case "select":
 		switch appRequest.Actions[0].SelectedOptions[0].Value {
+		case "CreateNewRepository":
+			response_url := appRequest.ResponseURL
+			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/inviteusertohike <name>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			client.HitRequest(response_url, "POST", header, responseJson)
+
+		case "ListTeams":
+			response_url := appRequest.ResponseURL
+			var (
+				session                = make([]string, 1)
+				valuesForTeamsDropDown string
+			)
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
+			allTeamsArray, _ := git.ListTeams()
+			for i, val := range allTeamsArray {
+				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
+			}
+			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			payload := SubstParams(session, GetPayload("listteams.json"))
+			client.HitRequest(response_url, "POST", header, payload)
+
+		case "AddUserToTeam":
+			response_url := appRequest.ResponseURL
+			var (
+				session = make([]string, 1)
+				//valuesForTeamsDropDown string
+				roleDefinition string = "Role specifies the role the user should have in the team. Possible values are:\n" +
+					"1. member - a normal member of the team\n" +
+					"2. maintainer - a team maintainer. Able to add/remove other team members, promote other team members to team maintainer, and edit the team’s name and description"
+			)
+			/*
+				client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
+				allTeamsArray, _ := git.ListTeams()
+				for i, val := range allTeamsArray {
+					valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
+				}
+				session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
+			*/
+			session[0] = roleDefinition
+			//client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			payload := SubstParams(session, GetPayload("addusertoteam.json"))
+			client.HitRequest(response_url, "POST", header, payload)
+
+		/*
+			case "CreateNewRepository":
+				response_url := appRequest.ResponseURL
+				responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/createrepo <name>#<description>#<private or public (true or false)>#<teamname>`\nEx. `/createrepo TestRepo#Description for test repo#true>#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+				client.HitRequest(response_url, "POST", header, responseJson)
+		*/
+
+		case "UserDetails":
+			response_url := appRequest.ResponseURL
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/getuserrepos <github-handle>`\nEx. `/getuserrepos hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			client.HitRequest(response_url, "POST", header, responseJson)
+
+		case "RepoDetails":
+			response_url := appRequest.ResponseURL
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/repodetails <reponame>`\nEx. `/repodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			client.HitRequest(response_url, "POST", header, responseJson)
+
+		case "TeamDetails":
+			response_url := appRequest.ResponseURL
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/teamdetails <reponame>`\nEx. `/teamdetails QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			client.HitRequest(response_url, "POST", header, responseJson)
+
 		case "ListPRs":
 			var repos = make([]string, 2)
 			var session = make([]string, 1)
@@ -82,26 +147,6 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			}
 			session[0] = options[0 : len(options)-1]
 			payload := SubstParams(session, GetPayload("sendListPROptions.json"))
-			client.HitRequest(response_url, "POST", header, payload)
-
-		case "AddUserToTeam":
-			response_url := appRequest.ResponseURL
-			var (
-				session                = make([]string, 2)
-				valuesForTeamsDropDown string
-				roleDefinition         string = "Role specifies the role the user should have in the team. Possible values are:\n" +
-					"1. member - a normal member of the team\n" +
-					"2. maintainer - a team maintainer. Able to add/remove other team members, promote other team members to team maintainer, and edit the team’s name and description"
-			)
-			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
-			allTeamsArray, _ := git.ListTeams()
-			for i, val := range allTeamsArray {
-				valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
-			}
-			session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
-			session[1] = roleDefinition
-			client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-			payload := SubstParams(session, GetPayload("addusertoteam.json"))
 			client.HitRequest(response_url, "POST", header, payload)
 
 		case "DeleteUser":
@@ -446,6 +491,57 @@ func DeleteAndAdd(teamadmin map[string]string, db *sql.DB) (bool, int) {
 	}
 }
 
+func UserDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
+	response_url := string(ctx.PostArgs().Peek("response_url"))
+	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	var (
+		session                = make([]string, 1)
+		valuesForTeamsDropDown string
+	)
+
+	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Checking if userid belongs to Hike...`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	//if email
+	if strings.Contains(textStr, "@hike.in") {
+		githubId := git.GetGithubIdFromEmail(strings.TrimSpace(textStr))
+		fmt.Println("githubid from email --------->" + githubId)
+
+		//If github id is empty
+		if githubId == "" || githubId == "UNKNOWN" {
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as no github id is associated with this email id. Use github id instead.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			return
+		}
+
+		//Check is user belongs to hike
+		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(githubId)); !ok {
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			return
+		}
+
+		repos := git.GetUsersRepo(githubId)
+		for i, val := range repos {
+			valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val + "\", \"short\": true },"
+		}
+		session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
+		payload := SubstParams(session, GetPayload("userdetails.json"))
+		client.HitRequest(response_url, "POST", header, payload)
+
+	} else {
+		//Check is user belongs to hike
+		if ok, _ := git.CheckIfUserIsMemberOfOrg(strings.TrimSpace(textStr)); !ok {
+			client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Can't perform this task as User does not belongs to Hike.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+			return
+		}
+
+		repos := git.GetUsersRepo(strings.TrimSpace(textStr))
+		for i, val := range repos {
+			valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val + "\", \"short\": true },"
+		}
+		session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
+		payload := SubstParams(session, GetPayload("userdetails.json"))
+		client.HitRequest(response_url, "POST", header, payload)
+	}
+}
+
 func GetTeamAdminFromDB(teamname string, db *sql.DB) (admin string) {
 	var (
 		query = "SELECT admin FROM teamadmins WHERE team = '" + teamname + "'"
@@ -506,7 +602,7 @@ func NotifyAdminAndUser(response_url, callerId, githubUserId, teamAdmin, teamNam
 func NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, description, private, teamname, teamAdmin string, teamid int) {
 	//fmt.Println(response_url)
 	options := make([]string, 4)
-	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create *" + name + "* repository under  : *" + teamname + "*"
+	options[0] = GetEmailIdFromSlackId(callerId) + " wants to create " + name + " repository under  : " + teamname
 	options[1] = "ACREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
 	options[2] = "DCREATEREPO_" + name + ":" + description + ":" + private + ":" + teamname + ":" + callerId
 

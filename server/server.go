@@ -38,6 +38,22 @@ func NewServer(db *sql.DB) {
 		CreateRepository(ctx, db)
 	})
 
+	router.POST("/userdetails", func(ctx *fasthttp.RequestCtx) {
+		UserDetails(ctx, db)
+	})
+
+	router.POST("/repodetails", func(ctx *fasthttp.RequestCtx) {
+		//RepoDetails(ctx, db)
+	})
+
+	router.POST("/teamdetails", func(ctx *fasthttp.RequestCtx) {
+		//TeamDetails(ctx, db)
+	})
+
+	router.POST("/inviteusertohike", func(ctx *fasthttp.RequestCtx) {
+		//InviteUserToHike(ctx, db)
+	})
+
 	router.PanicHandler = func(ctx *fasthttp.RequestCtx, p interface{}) {
 		glog.V(0).Infof("Panic occurred %s", p, ctx.Request.URI().String())
 	}

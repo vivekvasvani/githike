@@ -241,3 +241,19 @@ func CreateRepository(name, description, private string, teamid int) bool {
 	}
 	return false
 }
+
+func GetUsersRepo(user string) []string {
+	var repos []string
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	opt := &github.RepositoryListOptions{Type: "all", Sort: "updated", Direction: "desc"}
+	reposArray, _, _ := client.Repositories.List(ctx, user, opt)
+	for _, val := range reposArray {
+		repos = append(repos, val.GetName())
+	}
+	return repos
+}
