@@ -27,7 +27,7 @@
                         */
                         {
                             "text": "Invite user to HIKE",
-                            "value": "inviteusertohike"
+                            "value": "InviteUserToHike"
                         },                        
                         {
                             "text": "List All Teams",
