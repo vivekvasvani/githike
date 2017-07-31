@@ -66,7 +66,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "InviteUserToHike":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/inviteusertohike <name>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/inviteusertohike <github-handle>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "CreateNewRepository":
@@ -672,7 +672,7 @@ func InviteUserToHike(ctx *fasthttp.RequestCtx, db *sql.DB) {
 
 func NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin string) {
 	options := make([]string, 4)
-	options[0] = "Do you want me to send invitation to :" + GetEmailIdFromSlackId(callerId) + "to join HIKE ?"
+	options[0] = "Do you want me to send invitation to :" + GetEmailIdFromSlackId(callerId) + " to join HIKE ?"
 	options[1] = "ACSENDINVITATION_" + githubhandle + ":" + callerId
 	options[2] = "DCSENDINVITATION_" + githubhandle + ":" + callerId
 

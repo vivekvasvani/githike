@@ -34,7 +34,7 @@
                             "value": "ListTeams"
                         },
                         {
-                            "text": "Adds a GitHub user to a specific team",
+                            "text": "Adds a user to a team",
                             "value": "AddUserToTeam"
                         },
                         {
