@@ -660,20 +660,21 @@ func NotifyAdminAndUserCreateRepoVersion(response_url, callerId, name, descripti
 
 func InviteUserToHike(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	response_url := string(ctx.PostArgs().Peek("response_url"))
-	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	githubhandle := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
 	teamAdmin := "abhishekg@hike.in"
 
+	fmt.Println("github handle :" + githubhandle)
 	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 	//name, description, private, teamname, teamid
-	NotifyAdminAndUserInviteUserToHike(response_url, textStr, callerId, teamAdmin)
+	NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin)
 }
 
 func NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin string) {
-	options := make([]string, 3)
+	options := make([]string, 4)
 	options[0] = "Do you want me to send invitation to :" + GetEmailIdFromSlackId(callerId) + "to join HIKE ?"
-	options[1] = "ACSENDINVITATION_" + ":" + githubhandle + ":" + callerId
-	options[2] = "DCSENDINVITATION_" + ":" + githubhandle + ":" + callerId
+	options[1] = "ACSENDINVITATION_" + githubhandle + ":" + callerId
+	options[2] = "DCSENDINVITATION_" + githubhandle + ":" + callerId
 
 	api := slack.New(SLACK_TOKEN)
 	users, err := api.GetUsers()
