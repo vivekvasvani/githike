@@ -121,7 +121,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "UserDetails":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/githubuserdetails <github-handle or hike email id>`\nEx. `/getuserrepos hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/githubuserdetails <github-handle or hike email id>`\nEx. `/githubuserdetails hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "RepoDetails":
