@@ -43,7 +43,7 @@ func NewServer(db *sql.DB) {
 	})
 
 	router.POST("/repodetails", func(ctx *fasthttp.RequestCtx) {
-		//RepoDetails(ctx, db)
+		RepoDetails(ctx, db)
 	})
 
 	router.POST("/teamdetails", func(ctx *fasthttp.RequestCtx) {

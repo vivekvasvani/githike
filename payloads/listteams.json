@@ -6,7 +6,7 @@
         {
             "color": "#36a64f",
             "title": "",
-            "text": "List of all Hike teams",
+            "text": "List teams",
             "fields": [
                 ${0}
             ]

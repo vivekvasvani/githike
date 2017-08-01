@@ -273,3 +273,35 @@ func InviteUserToHike(username string) bool {
 		return false
 	}
 }
+
+func ListTeamsOfRepo(reponame string) []string {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	opt := &github.ListOptions{
+		PerPage: 100,
+	}
+	// get all pages of results
+	var allRepos []*github.Team
+	for {
+		repos, resp, err := client.Repositories.ListTeams(ctx, ORG, reponame, opt)
+		if err != nil {
+			fmt.Println(err)
+		}
+		allRepos = append(allRepos, repos...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
+
+	var teamsAndPermission []string
+	for _, val := range allRepos {
+		teamsAndPermission = append(teamsAndPermission, val.GetName()+" : "+val.GetPermission())
+	}
+	return teamsAndPermission
+}

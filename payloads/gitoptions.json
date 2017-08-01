@@ -46,7 +46,7 @@
                             "value": "UserDetails"
                         },
                         {
-                            "text": "Repository details",
+                            "text": "List all teams of a Repo",
                             "value": "RepoDetails"
                         },
                         {
