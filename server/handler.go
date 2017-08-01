@@ -706,20 +706,3 @@ func RepoDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	payload := SubstParams(session, GetPayload("listteams.json"))
 	client.HitRequest(response_url, "POST", header, payload)
 }
-
-func RepoDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
-	response_url := string(ctx.PostArgs().Peek("response_url"))
-	reponame := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
-	var (
-		session                = make([]string, 1)
-		valuesForTeamsDropDown string
-	)
-	allTeamsArray := git.ListTeamsOfRepo(reponame)
-	for i, val := range allTeamsArray {
-		valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val + "\", \"short\": true },"
-	}
-	session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
-	client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-	payload := SubstParams(session, GetPayload("listteams.json"))
-	client.HitRequest(response_url, "POST", header, payload)
-}

@@ -253,7 +253,7 @@ func GetUsersRepo(user string) []string {
 	opt := &github.RepositoryListOptions{Type: "all", Sort: "updated", Direction: "desc"}
 	reposArray, _, _ := client.Repositories.List(ctx, user, opt)
 	for _, val := range reposArray {
-		repos = append(repos, val.GetName()+" : "+val.GetPermissions())
+		repos = append(repos, val.GetName())
 	}
 	return repos
 }
