@@ -3,6 +3,7 @@ package githubapis
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"fmt"
@@ -274,6 +275,23 @@ func InviteUserToHike(username string) bool {
 	}
 }
 
+func CheckForPublicEmail(githubhandle string) bool {
+	header := make(map[string]string)
+	var userDetails UserDetails
+	header["Authorization"] = "token " + GITHUB_TOKEN
+	url := "https://api.github.com/users/" + githubhandle
+	response := client.HitRequest(url, "GET", header, "")
+	err := json.Unmarshal(response, &userDetails)
+	if err != nil {
+		fmt.Println("[ERROR] CheckForPublicEmail Json Unmarshal")
+	}
+	if userDetails.Email == "" || !strings.Contains(userDetails.Email.(string), "hike.in") {
+		return false
+	} else {
+		return true
+	}
+
+}
 func ListTeamsOfRepo(reponame string) []string {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -301,7 +319,7 @@ func ListTeamsOfRepo(reponame string) []string {
 
 	var teamsAndPermission []string
 	for _, val := range allRepos {
-		teamsAndPermission = append(teamsAndPermission, val.GetName()+" : "+val.GetPermission())
+		teamsAndPermission = append(teamsAndPermission, val.GetName()+" ( Permission : "+val.GetPermission()+" )")
 	}
 	return teamsAndPermission
 }

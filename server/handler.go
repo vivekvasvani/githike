@@ -350,10 +350,10 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			if !sendInvitation {
 				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Could not complete the request at this moment.\", \"response_type\": \"in_channel\", \"replace_original\": true}")
 			} else {
-				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user : "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
 			}
 
-			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}")
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Excellent !!! successfully sent the invitation to user : "+githubHandle+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}")
 
 		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "DCSENDINVITATION_"):
 			var (
@@ -366,8 +366,8 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			callerId := values[1]
 
 			//Change in githike channel
-			client.HitRequest(response_url, "POST", header, "{\"text\" : \"Will not send invitation to :"+githubHandle+" , Declined by :"+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
-			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Will not send invitation to :"+githubHandle+" , Declined by :"+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}}")
+			client.HitRequest(response_url, "POST", header, "{\"text\" : \"Will not send invitation to : "+githubHandle+" , Declined by : "+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Will not send invitation to : "+githubHandle+" , Declined by : "+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}}")
 		}
 	}
 }
@@ -664,15 +664,17 @@ func InviteUserToHike(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
 	teamAdmin := "abhishekg@hike.in"
 
-	fmt.Println("github handle :" + githubhandle)
-	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
-	//name, description, private, teamname, teamid
-	NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin)
+	if git.CheckForPublicEmail(githubhandle) {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin)
+	} else {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Sorry !!! Can't process your request as your public email-id(should be hike email id) is not configured in your github profile https://github.com/settings/profile.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	}
 }
 
 func NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin string) {
 	options := make([]string, 4)
-	options[0] = "Do you want me to send invitation to :" + GetEmailIdFromSlackId(callerId) + " to join HIKE ?"
+	options[0] = "Do you want me to send invitation to : " + GetEmailIdFromSlackId(callerId) + " to join HIKE ?"
 	options[1] = "ACSENDINVITATION_" + githubhandle + ":" + callerId
 	options[2] = "DCSENDINVITATION_" + githubhandle + ":" + callerId
 
