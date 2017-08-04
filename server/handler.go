@@ -436,6 +436,13 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			//Change in githike channel
 			client.HitRequest(response_url, "POST", header, "{\"text\" : \"Will not send invitation to : "+githubHandle+" , Declined by : "+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
 			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, "{\"text\" : \"Will not send invitation to : "+githubHandle+" , Declined by : "+buttonRequestStruct.User.Name+"\", \"response_type\": \"in_channel\", \"replace_original\": true, \"channel\" : \""+callerId+"\"}}")
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "Cancel"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			//Change in githike channel
+			client.HitRequest(response_url, "POST", header, "{\"text\" : \"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
 		}
 	}
 }
