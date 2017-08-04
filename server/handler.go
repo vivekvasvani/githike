@@ -812,7 +812,7 @@ func AddTeam(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	}
 
 	if !SearchInList(possibleValues, permission) {
-		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Possible values for permission:- pull\n- push\n`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"Possible values for permission:\n- pull\n- push\n\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		return
 	}
 
