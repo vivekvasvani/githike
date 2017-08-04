@@ -664,6 +664,11 @@ func InviteUserToHike(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
 	teamAdmin := "abhishekg@hike.in"
 
+	result, _ := git.CheckIfUserIsMemberOfOrg(githubhandle)
+	if !result {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`You are already a HIKE user :)`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	}
+
 	if git.CheckForPublicEmail(githubhandle) {
 		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 		NotifyAdminAndUserInviteUserToHike(response_url, githubhandle, callerId, teamAdmin)
