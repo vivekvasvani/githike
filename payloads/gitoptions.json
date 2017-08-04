@@ -48,6 +48,10 @@
                         {
                             "text": "List all teams of a Repo",
                             "value": "RepoDetails"
+                        },
+                        {
+                            "text": "Add a Team [Associate Repo with team]",
+                            "value": "AddTeam"
                         },                        
                         {
                             "text": "List the Pull Requests for a repo",

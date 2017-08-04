@@ -133,7 +133,7 @@ func ListTeams() ([]*github.Team, string) {
 	return teams, ""
 }
 
-func ListRepos() {
+func ListRepos() []*github.Repository {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: GITHUB_TOKEN},
@@ -157,6 +157,7 @@ func ListRepos() {
 		}
 		opt.Page = resp.NextPage
 	}
+	return allRepos
 }
 
 func AddTeamMembership(team int, user, role string) (*github.Membership, error) {
@@ -322,4 +323,42 @@ func ListTeamsOfRepo(reponame string) []string {
 		teamsAndPermission = append(teamsAndPermission, val.GetName()+" ( Permission : "+val.GetPermission()+" )")
 	}
 	return teamsAndPermission
+}
+
+func AddRepositoryToTeam(repoName, teamName, permission string) bool {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: GITHUB_TOKEN},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	opts := &github.OrganizationAddTeamRepoOptions{Permission: permission}
+	_, err := client.Organizations.AddTeamRepo(ctx, GetTeamNamesAndIdsMap()[teamName], ORG, repoName, opts)
+	if err == nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+func CheckIfRepoExists(repoName string) bool {
+	allRepos := ListRepos()
+	var result bool = false
+	for _, val := range allRepos {
+		if val.GetName() == repoName {
+			result = true
+		}
+	}
+	return result
+}
+
+func CheckIfTeamExists(teamName string) bool {
+	allTeams, _ := ListTeams()
+	var result bool = false
+	for _, val := range allTeams {
+		if val.GetName() == teamName {
+			result = true
+		}
+	}
+	return result
 }

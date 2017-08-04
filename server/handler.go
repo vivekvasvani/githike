@@ -129,9 +129,9 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/repodetails <reponame>`\nEx. `/repodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
-		case "TeamDetails":
+		case "AddTeam":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/teamdetails <teamname>`\nEx. `/teamdetails QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/addteam <repo name> <team name>`\nEx. `/addteam android-client server-developers`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListPRs":
@@ -335,6 +335,74 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				"Sorry!!! Your Request has been declined :( Please get in touch with Team Admin",
 				values[4],
 			}, GetPayload("createRepoDeclined.json"))
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "ACADDTEAM_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+
+			name := values[0]
+			teamName := values[1]
+			permission := values[2]
+			result := git.AddRepositoryToTeam(name, teamName, permission)
+
+			if !result {
+				client.HitRequest(response_url, "POST", header, "{\"text\" : \"Could not complete the request at this moment.\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			} else {
+				client.HitRequest(response_url, "POST", header, SubstParams([]string{
+					name,
+					teamName,
+					permission,
+					buttonRequestStruct.User.Name,
+					"",
+					values[3],
+				}, GetPayload("addTeamApproved.json")))
+			}
+
+			//Send status about the request back to user
+			payload := SubstParams([]string{
+				name,
+				teamName,
+				permission,
+				buttonRequestStruct.User.Name,
+				"Excellent!!! Your Request has been approved!!!",
+				values[3],
+			}, GetPayload("addTeamApproved.json"))
+			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
+
+		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "DCADDTEAM_"):
+			var (
+				response_url = appRequest.ResponseURL
+			)
+			getAllDetails := strings.Split(string(buttonRequestStruct.Actions[0].Value), "_")[1]
+			values := strings.Split(getAllDetails, ":")
+
+			name := values[0]
+			teamName := values[1]
+			permission := values[2]
+
+			//Change in githike channel
+			client.HitRequest(response_url, "POST", header, SubstParams([]string{
+				name,
+				teamName,
+				permission,
+				buttonRequestStruct.User.Name,
+				"",
+				values[3],
+			}, GetPayload("addTeamDeclined.json")))
+
+			//Send status about the request back to user
+			payload := SubstParams([]string{
+				name,
+				teamName,
+				permission,
+				buttonRequestStruct.User.Name,
+				"Sorry!!! Your Request has been declined :( Please get in touch with Team Admin",
+				values[3],
+			}, GetPayload("addTeamDeclined.json"))
 			client.HitRequest(SLACK_WEBHOOK_TO_SEND_SLACKBOT, "POST", header, payload)
 
 		case strings.HasPrefix(buttonRequestStruct.Actions[0].Value, "ACSENDINVITATION_"):
@@ -707,7 +775,7 @@ func RepoDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	)
 	allTeamsArray := git.ListTeamsOfRepo(reponame)
 	if len(allTeamsArray) == 0 {
-		client.HitRequest(response_url, "POST", header, "{ \"text\": \""+reponame+" is not associated with any teams. Please contact with abshishek gaur for more details.\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \""+reponame+" is not associated with any teams. Please contact with abshishek gaur for more details or use\n /addteam <repo name> <team name>\n\", \"response_type\": \"in_channel\", \"replace_original\": true }")
 		return
 	}
 	for i, val := range allTeamsArray {
@@ -717,4 +785,69 @@ func RepoDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
 	client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 	payload := SubstParams(session, GetPayload("listteams.json"))
 	client.HitRequest(response_url, "POST", header, payload)
+}
+
+func AddTeam(ctx *fasthttp.RequestCtx, db *sql.DB) {
+	response_url := string(ctx.PostArgs().Peek("response_url"))
+	textStr := fmt.Sprintf("%s", ctx.PostArgs().Peek("text"))
+	commandLineParams := strings.Split(textStr, "#")
+	if len(commandLineParams) != 3 {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Commandline params are not valid :"+textStr+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+	repoName := commandLineParams[0]
+	teamName := commandLineParams[1]
+	permission := commandLineParams[2]
+
+	possibleValues := []string{"push", "pull"}
+
+	if !git.CheckIfRepoExists(repoName) {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Repository does not exists.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+
+	if !git.CheckIfTeamExists(teamName) {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Team does not exists.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+
+	if !SearchInList(possibleValues, permission) {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Possible values for permission:- pull\n- push\n`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+
+	callerId := fmt.Sprintf("%s", ctx.PostArgs().Peek("user_id"))
+	keysAndValues := git.GetTeamNamesAndIdsMap()
+	if _, ok := keysAndValues[teamName]; !ok {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \"`There in no such team in our config. Please check the Team's list again.`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
+	teamAdmin := GetTeamAdminFromDB(teamName, db)
+	if teamAdmin == "" {
+		teamAdmin = "abhishekg@hike.in"
+	}
+	client.HitRequest(response_url, "POST", header, "{ \"text\": \"`Your request has been sent to : "+teamAdmin+"`\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+	//name, description, private, teamname, teamid
+	NotifyAdminAndUserAddTeamToRepo(response_url, callerId, repoName, teamName, permission, teamAdmin, keysAndValues[teamName])
+}
+
+func NotifyAdminAndUserAddTeamToRepo(response_url, callerId, repoName, teamname, permission, teamAdmin string, teamid int) {
+	//fmt.Println(response_url)
+	options := make([]string, 4)
+	options[0] = GetEmailIdFromSlackId(callerId) + " wants to add reposity " + repoName + " to team  : " + teamname
+	options[1] = "ACADDTEAM_" + repoName + ":" + teamname + ":" + permission + ":" + callerId
+	options[2] = "DCADDTEAM_" + repoName + ":" + teamname + ":" + permission + ":" + callerId
+
+	api := slack.New(SLACK_TOKEN)
+	users, err := api.GetUsers()
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, val := range users {
+		if teamAdmin == val.Profile.Email {
+			options[3] = "Hey <@" + val.ID + ">,\n "
+			payload := SubstParams(options, GetPayload("sendToAdmin.json"))
+			client.HitRequest(SLACK_WEBHOOK, "POST", header, payload)
+		}
+	}
 }
