@@ -285,7 +285,7 @@ func CheckForPublicEmail(githubhandle string) bool {
 	if err != nil {
 		fmt.Println("[ERROR] CheckForPublicEmail Json Unmarshal")
 	}
-	if userDetails.Email == "" || !strings.Contains(userDetails.Email.(string), "hike.in") {
+	if userDetails.Email == nil || !strings.Contains(userDetails.Email.(string), "hike.in") {
 		return false
 	} else {
 		return true

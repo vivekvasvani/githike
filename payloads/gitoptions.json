@@ -48,11 +48,7 @@
                         {
                             "text": "List all teams of a Repo",
                             "value": "RepoDetails"
-                        },
-                        {
-                            "text": "Team Details",
-                            "value": "TeamDetails"
-                        },
+                        },                        
                         {
                             "text": "List the Pull Requests for a repo",
                             "value": "ListPRs"

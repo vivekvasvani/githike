@@ -700,6 +700,10 @@ func RepoDetails(ctx *fasthttp.RequestCtx, db *sql.DB) {
 		valuesForTeamsDropDown string
 	)
 	allTeamsArray := git.ListTeamsOfRepo(reponame)
+	if len(allTeamsArray) == 0 {
+		client.HitRequest(response_url, "POST", header, "{ \"text\": \""+reponame+" is not associated with any teams. Please contact with abshishek gaur for more details.\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
+		return
+	}
 	for i, val := range allTeamsArray {
 		valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val + "\", \"short\": true },"
 	}
