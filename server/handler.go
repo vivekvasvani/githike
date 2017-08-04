@@ -442,7 +442,7 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 				response_url = appRequest.ResponseURL
 			)
 			//Change in githike channel
-			client.HitRequest(response_url, "POST", header, "{\"text\" : \"\", \"response_type\": \"in_channel\", \"replace_original\": true}")
+			client.HitRequest(response_url, "POST", header, "{ \"response_type\": \"in_channel\", \"delete_original\": true }")
 		}
 	}
 }
