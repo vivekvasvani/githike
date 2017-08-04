@@ -59,13 +59,13 @@
                         }
                         
                     ]
-                },                
+                },                                
                 {
                     "name": "Cancel",
                     "text": "Cancel",
                     "type": "button",
                     "style": "danger",
-                    "value": "gitoptioncancel"
+                    "value": "Cancel"
                 }
             ]
         }
