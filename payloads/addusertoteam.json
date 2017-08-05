@@ -1,5 +1,5 @@
 {
-	"text": "Use This slash command to add team membership.\n /gitaddmembership <teamname>#<github-handle>#<roletype>\nEx. `/addmembership QA#hikeuser#member`\nPossible values for roleType : member/maintainer",
+	"text": "Use This slash command to add team membership.\n /gitaddmembership <teamname>#<github-handle>#<roletype>\nEx. `/gitaddmembership QA#hikeuser#member`\nPossible values for roleType : member/maintainer",
     "response_type": "in_channel",
     "replace_original": true    
 }

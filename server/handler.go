@@ -66,12 +66,12 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "InviteUserToHike":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/gitinviteusertohike <github-handle>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/gitinviteusertohike <github-handle>`\nEx. `/gitinviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "CreateNewRepository":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/gitcreaterepo <name>#<description>#<true for private || false for public>#<teamname>`\nEx. `/createrepo testrepo#This is a description#true#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/gitcreaterepo <name>#<description>#<true for private || false for public>#<teamname>`\nEx. `/gitcreaterepo testrepo#This is a description#true#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListTeams":
@@ -108,12 +108,12 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "RepoDetails":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitrepodetails <reponame>`\nEx. `/repodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitrepodetails <reponame>`\nEx. `/gitrepodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "AddTeam":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitaddteam <repo name> <team name>`\nEx. `/addteam android-client server-developers`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitaddteam <repo name> <team name>`\nEx. `/gitaddteam android-client server-developers`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListPRs":
