@@ -66,12 +66,12 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 
 		case "InviteUserToHike":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/inviteusertohike <github-handle>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to invite user to hike :\n `/gitinviteusertohike <github-handle>`\nEx. `/inviteusertohike hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "CreateNewRepository":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/createrepo <name>#<description>#<true for private || false for public>#<teamname>`\nEx. `/createrepo testrepo#This is a description#true#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/gitcreaterepo <name>#<description>#<true for private || false for public>#<teamname>`\nEx. `/createrepo testrepo#This is a description#true#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListTeams":
@@ -93,45 +93,27 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 		case "AddUserToTeam":
 			response_url := appRequest.ResponseURL
 			var (
-				session = make([]string, 1)
-				//valuesForTeamsDropDown string
+				session               = make([]string, 1)
 				roleDefinition string = "Role specifies the role the user should have in the team. Possible values are:\n" +
 					"1. member - a normal member of the team\n" +
 					"2. maintainer - a team maintainer. Able to add/remove other team members, promote other team members to team maintainer, and edit the team’s name and description"
 			)
-			/*
-				client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Fetching all Teams!!!\", \"response_type\": \"in_channel\", \"replace_original\": true }")
-				allTeamsArray, _ := git.ListTeams()
-				for i, val := range allTeamsArray {
-					valuesForTeamsDropDown = valuesForTeamsDropDown + "{ \"title\": \"\", \"value\": \"" + strconv.Itoa(i+1) + ". " + val.GetName() + "\", \"short\": true },"
-				}
-				session[0] = valuesForTeamsDropDown[0 : len(valuesForTeamsDropDown)-1]
-			*/
 			session[0] = roleDefinition
-			//client.HitRequest(response_url, "POST", header, "{ \"text\": \"Wait... Processing your request!!!\", \"response_type\": \"ephemeral\", \"replace_original\": true }")
 			payload := SubstParams(session, GetPayload("addusertoteam.json"))
 			client.HitRequest(response_url, "POST", header, payload)
-
-		/*
-			case "CreateNewRepository":
-				response_url := appRequest.ResponseURL
-				responseJson := "{ \"text\": \"Use This slash command to create a new repository :\n `/createrepo <name>#<description>#<private or public (true or false)>#<teamname>`\nEx. `/createrepo TestRepo#Description for test repo#true>#QA`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
-				client.HitRequest(response_url, "POST", header, responseJson)
-		*/
-
 		case "UserDetails":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/githubuserdetails <github-handle or hike email id>`\nEx. `/githubuserdetails hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gituserdetails <github-handle or hike email id>`\nEx. `/githubuserdetails hikeuser`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "RepoDetails":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/repodetails <reponame>`\nEx. `/repodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitrepodetails <reponame>`\nEx. `/repodetails java-server-modules`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "AddTeam":
 			response_url := appRequest.ResponseURL
-			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/addteam <repo name> <team name>`\nEx. `/addteam android-client server-developers`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
+			responseJson := "{ \"text\": \"Use This slash command to list user's repositories :\n `/gitaddteam <repo name> <team name>`\nEx. `/addteam android-client server-developers`\n\", \"response_type\": \"in_channel\", \"replace_original\": true }"
 			client.HitRequest(response_url, "POST", header, responseJson)
 
 		case "ListPRs":
@@ -156,7 +138,6 @@ func HandleAppRequests(ctx *fasthttp.RequestCtx) {
 			client.HitRequest(response_url, "POST", header, payload)
 
 		case "DeleteUser":
-			//response_url := appRequest.ResponseURL
 
 		}
 
